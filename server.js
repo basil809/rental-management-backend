@@ -59,9 +59,22 @@ io.on('connection', (socket) => {
    🧱 MIDDLEWARE
 ================================= */
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      console.log('❌ Blocked by CORS:', origin);
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
@@ -80,6 +93,7 @@ if (process.env.NODE_ENV !== 'production') {
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => {
+    console.log("Mongo URI exists:", !!process.env.MONGODB_URI);
     console.error('❌ MongoDB connection error:', err);
     process.exit(1);
   });
