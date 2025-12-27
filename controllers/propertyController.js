@@ -72,6 +72,7 @@ exports.getAllProperties = async (req, res) => {
   try {
     const properties = await Property.find({});
     console.log('Properties found:', properties.length);
+    console.log('Connected DB:', mongoose.connection.name);
     res.json(properties);
 
   } catch (err) {
