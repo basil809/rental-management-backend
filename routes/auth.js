@@ -18,6 +18,7 @@ router.post('/login/:type', async (req, res) => {
   let matchField;
 
   try {
+    // Determine user type and match field
     if (type === 'admin') {
       user = await Admin.findOne({ username: identifier });
       matchField = 'username';
@@ -26,15 +27,13 @@ router.post('/login/:type', async (req, res) => {
       matchField = 'email';
     } else if (type === 'tenant') {
       user = await Tenant.findOne({ tenantID: identifier });
-      matchField = 'tenantID';
+      matchField = 'tenantId';
     } else {
       return res.status(400).json({ message: 'Invalid user type' });
     }
 
     if (!user) {
-      return res.status(401).json({
-        message: `User not found with ${matchField}: ${identifier}`
-      });
+      return res.status(401).json({ message: `User not found with ${matchField}: ${identifier}` });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -42,26 +41,19 @@ router.post('/login/:type', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { id: user._id, role: type },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    const isProduction = process.env.NODE_ENV === 'production';
-
+    // Sign JWT token
+    const token = jwt.sign({ id: user._id, type }, JWT_SECRET, { expiresIn: '1h' });
+    const isProd = process.env.NODE_ENV === 'production';
+    
+    // Send token in HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'None' : 'Lax',
-      maxAge: 60 * 60 * 1000
+      secure: isProd,
+      sameSite: isProd ? 'None' : 'Lax'
     });
-
-    res.json({ message: 'Login successful' });
-
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
 
