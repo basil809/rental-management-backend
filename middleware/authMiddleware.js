@@ -4,7 +4,11 @@ const Tenant = require('../models/tenants');
 const Landlord = require('../models/landlords');
 const Admin = require('../models/admin');
 
-const JWT_SECRET = 'n9&Lk!zP2x@Qe7#rV8sWf$uT0&jD';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if(!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined');
+}
 
 const authMiddleware = async (req, res, next) => {
   const token = req.cookies.token;
