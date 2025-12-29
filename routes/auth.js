@@ -7,7 +7,11 @@ const Admin = require('../models/admin');
 const Landlord = require('../models/landlords');
 const Tenant = require('../models/tenants');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'n9&Lk!zP2x@Qe7#rV8sWf$uT0&jD';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined');
+}
 
 // LOGIN ENDPOINT for admin, landlord, tenant
 router.post('/login/:type', async (req, res) => {
