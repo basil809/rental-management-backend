@@ -32,11 +32,14 @@ exports.createLandlord = async (req, res) => {
     await landlord.save();
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-      }
+      },
+      tls: { rejectUnauthorized: false }
     });
 
     const mailOptions = {
@@ -58,9 +61,13 @@ exports.createLandlord = async (req, res) => {
       res.status(201).json({ message: 'Landlord registered and email sent successfully' });
     } catch (emailErr) {
       console.error('Landlord email send error:', emailErr);
+      console.error('Email error code:', emailErr && emailErr.code);
+      if (emailErr && emailErr.response) console.error('Email response:', emailErr.response.toString());
       res.status(201).json({
         message: 'Landlord registered successfully, but email failed to send.',
-        warning: emailErr.message
+        warning: emailErr.message,
+        code: emailErr.code,
+        response: emailErr.response ? emailErr.response.toString() : undefined
       });
     }
   } catch (err) {
