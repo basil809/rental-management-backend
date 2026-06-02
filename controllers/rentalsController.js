@@ -30,7 +30,7 @@ exports.create = async (req, res) => {
 };
 
 //code for displaying all the inquiries for the logged in landlord
-exports.findAll = async (req, res) => {
+exports.getAllInquiries = async (req, res) => {
   try {
     // ✅ Check if the user is a landlord
     if (req.user.userType !== 'Landlord') {
@@ -73,7 +73,7 @@ exports.findAll = async (req, res) => {
 };
 
 //code to enable the landlord to make an inquiry as reached out
-exports.reachedOut = async (req, res) => {
+exports.updateStatus = async (req, res) => {
   if (req.user.userType !== 'Landlord') {
       return res.status(403).json({
         success: false,

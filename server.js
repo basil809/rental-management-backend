@@ -12,6 +12,7 @@ const errorHandler = require('./middleware/errorHandler');
 const SystemLog = require('./models/SystemLog');
 const Tenant = require('./models/tenants');
 const Payment = require('./models/payments');
+const Rentals = require('./models/rentals');
 
 dotenv.config();
 
@@ -102,12 +103,12 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api', require('./routes/admin'));
 app.use('/api/system', require('./routes/SystemLog'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/rentals', require('./routes/rentals'));
 app.use('/api/tenants', require('./routes/tenants'));
 app.use('/api/landlords', require('./routes/landlords'));
 app.use('/api/properties', require('./routes/properties'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/messages', require('./routes/messages'));
-app.use('/api/rentals', require('./routes/rentals'));
 app.use('/api/quiz', require('./routes/genQuiz'));
 app.use('/api/invoices', require('./routes/invoice'));
 app.use('/api/mpesa', require('./routes/mpesa'));
