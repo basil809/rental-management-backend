@@ -33,14 +33,18 @@ exports.createLandlord = async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      authMethod: 'LOGIN',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       },
       tls: { rejectUnauthorized: false }
     });
+
+    await transporter.verify();
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -698,14 +702,21 @@ exports.createTenant = async (req, res) => {
 
         await tenant.save();
 
-        //send emial with credentials
+        //send email with credentials
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            authMethod: 'LOGIN',
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
-            }
+            },
+            tls: { rejectUnauthorized: false }
         });
+
+        await transporter.verify();
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -721,9 +732,20 @@ exports.createTenant = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
-
-        res.status(201).json({ message: 'Tenant created and email sent successfully' });
+        try {
+            await transporter.sendMail(mailOptions);
+            res.status(201).json({ message: 'Tenant created and email sent successfully' });
+        } catch (emailErr) {
+            console.error('Tenant email send error:', emailErr);
+            console.error('Email error code:', emailErr && emailErr.code);
+            if (emailErr && emailErr.response) console.error('Email response:', emailErr.response.toString());
+            res.status(201).json({
+                message: 'Tenant created successfully, but email failed to send.',
+                warning: emailErr.message,
+                code: emailErr.code,
+                response: emailErr.response ? emailErr.response.toString() : undefined
+            });
+        }
 
     } catch (err) {
         console.error('Tenant creation error:', err);
