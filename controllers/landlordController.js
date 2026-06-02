@@ -53,12 +53,28 @@ exports.createLandlord = async (req, res) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
-
-    res.status(201).json({ message: 'Landlord registered and email sent successfully' });
+    try {
+      await transporter.sendMail(mailOptions);
+      res.status(201).json({ message: 'Landlord registered and email sent successfully' });
+    } catch (emailErr) {
+      console.error('Landlord email send error:', emailErr);
+      res.status(201).json({
+        message: 'Landlord registered successfully, but email failed to send.',
+        warning: emailErr.message
+      });
+    }
   } catch (err) {
     console.error('Landlord creation error:', err);
-    res.status(500).json({ message: 'Something went wrong during landlord registration' });
+
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'A landlord with that email already exists.' });
+    }
+
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: err.message });
+    }
+
+    res.status(500).json({ message: err.message || 'Something went wrong during landlord registration' });
   }
 };
 
