@@ -81,10 +81,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 /* ===============================
-   📁 STATIC FILES (LOCAL ONLY)
+  📁 STATIC FILES
 ================================= */
   app.use(express.static(path.join(__dirname, '../public')));
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+  // Images are now hosted on Cloudinary, no need for local uploads
   
 /* ===============================
    🔐 MONGODB CONNECTION

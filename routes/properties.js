@@ -1,30 +1,19 @@
 // routes/properties.js
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const propertyController = require('../controllers/propertyController');
 const authMiddleware = require('../middleware/authMiddleware');
 const Tenant = require('../models/tenants');
 const Property = require('../models/properties');
 
-// Multer setup for image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/properties/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
-});
-
-const upload = multer({ storage });
+// Import centralized Cloudinary upload middleware
+const upload = require('../middleware/uploadMiddle');
 
 //Fetching the recent properties for the index page
 router.get('/recent', propertyController.getRecentProperties);
 
 // Create a new property (with images)
-router.post('/', authMiddleware, upload.array('images'), propertyController.createProperty);
+router.post('/', authMiddleware, upload.array('images', 10), propertyController.createProperty);
 
 // Count of properties (used in admin and landlord dashboard)
 router.get('/count', propertyController.getPropertyCount);

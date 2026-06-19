@@ -269,7 +269,7 @@ exports.updateLandlordProfileFromModal = async (req, res) => {
 
     //If Image file was uploaded
     if (req.file) {
-      updateData.image = `/uploads/landlords/${req.file.filename}`;
+      updateData.image = req.file.secure_url;
     }
 
     const updatedLandlord = await Landlord.findByIdAndUpdate(

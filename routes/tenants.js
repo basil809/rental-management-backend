@@ -4,21 +4,8 @@ const router = express.Router();
 const tenantController = require('../controllers/tenantsController');
 const authMiddleware = require('../middleware/authMiddleware');
 const Tenant = require('../models/tenants');
-const multer = require('multer');
-const path = require('path');
-
-// ✅ Configure Multer for file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/tenants/'); // Make sure this folder exists
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
-    cb(null, uniqueName);
-  }
-});
-const upload = multer({ storage });
+// ✅ Import centralized Cloudinary upload middleware
+const upload = require('../middleware/uploadMiddle');
 
 // ✅ Create tenant
 router.post('/', tenantController.createTenant);

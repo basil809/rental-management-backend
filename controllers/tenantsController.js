@@ -364,7 +364,7 @@ exports.updateTenantProfileFromModal = async (req, res) => {
 
     // If image file was uploaded
     if (req.file) {
-      updateData.image = `/uploads/tenants/${req.file.filename}`;
+      updateData.image = req.file.secure_url;
     }
 
     const updatedTenant = await Tenant.findByIdAndUpdate(

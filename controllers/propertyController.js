@@ -1,14 +1,12 @@
 // controllers/propertyController.js
 const Property = require('../models/properties');
 const Tenant = require('../models/tenants');
-const path = require('path');
-const fs = require('fs');
 
 // CREATE: Add a new property
 exports.createProperty = async (req, res) => {
   try {
-    // Handle image paths from multer
-    const imagePaths = req.files.map(file => file.path);
+    // Handle image paths from Cloudinary
+    const imagePaths = req.files.map(file => file.secure_url);
 
     const {
       title,
@@ -150,7 +148,7 @@ exports.getAvailableUnits = async (req, res) => {
 // UPDATE: Update property
 exports.updateProperty = async (req, res) => {
   try {
-    const imagePaths = req.files?.map(file => file.path) || [];
+    const imagePaths = req.files?.map(file => file.secure_url) || [];
     const updatedData = { ...req.body };
 
     if (imagePaths.length > 0) {
@@ -178,12 +176,7 @@ exports.deleteProperty = async (req, res) => {
       return res.status(404).json({ message: 'Property not found.' });
     }
 
-    // Optionally remove associated images from the filesystem
-    deleted.images.forEach(imagePath => {
-      fs.unlink(imagePath, err => {
-        if (err) console.error(`Failed to delete image ${imagePath}:`, err);
-      });
-    });
+    // Images are automatically managed by Cloudinary, no need to delete files manually
 
     res.status(200).json({ message: 'Property deleted successfully.' });
   } catch (err) {
