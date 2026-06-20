@@ -5,49 +5,11 @@ const Tenant = require('../models/tenants');
 const Invoice = require('../models/Invoice');
 const Payment = require('../models/payments');
 const MaintenanceRequest = require('../models/maintenancerequests');
-const nodemailer = require('nodemailer');
+const { sendLoginCredentials } = require('../utils/emailService');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid'); //For tenant ID
 const bcrypt = require('bcrypt');
 require('dotenv').config();
-
-// Helper to create and verify an email transporter with sensible timeouts
-async function createEmailTransporter() {
-  const auth = {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  };
-
-  const baseOptions = {
-    auth,
-    tls: { rejectUnauthorized: false },
-    logger: true,
-    debug: true,
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  };
-
-  const attempts = [
-    { host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true, authMethod: 'LOGIN', ...baseOptions },
-    { host: 'smtp.gmail.com', port: 465, secure: true, authMethod: 'LOGIN', ...baseOptions },
-    { service: 'gmail', ...baseOptions }
-  ];
-
-  for (const opts of attempts) {
-    try {
-      const transporter = nodemailer.createTransport(opts);
-      await transporter.verify();
-      console.log('Email transporter verified', { port: opts.port || 'service', secure: !!opts.secure, service: opts.service });
-      return transporter;
-    } catch (err) {
-      console.warn('Transporter verify failed for options', { port: opts.port || 'service', secure: !!opts.secure, service: opts.service, code: err && err.code });
-    }
-  }
-
-  // If all verifies fail, return a default transporter (so sendMail can still attempt)
-  return nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true, authMethod: 'LOGIN', auth, tls: { rejectUnauthorized: false }, ...baseOptions });
-}
 
 // ✅ [1] Register a landlord
 exports.createLandlord = async (req, res) => {
@@ -69,34 +31,26 @@ exports.createLandlord = async (req, res) => {
 
     await landlord.save();
 
-    const transporter = await createEmailTransporter();
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Welcome to La Maison - Landlord Access',
-      html: `
-        <p>Dear ${name},</p>
-        <p>Your landlord account has been created successfully.</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Password:</strong> ${plainPassword}</p>
-        <p>You can now log in to your dashboard using these credentials.</p>
-        <p>Regards,<br>La Maison Team</p>
-      `
-    };
-
     try {
-      await transporter.sendMail(mailOptions);
+      await sendLoginCredentials(email, email, plainPassword, {
+        subject: 'Welcome to La Maison - Landlord Access',
+        html: `
+          <p>Dear ${name},</p>
+          <p>Your landlord account has been created successfully.</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Password:</strong> ${plainPassword}</p>
+          <p>You can now log in to your dashboard using these credentials.</p>
+          <p>Regards,<br>La Maison Team</p>
+        `
+      });
+
       res.status(201).json({ message: 'Landlord registered and email sent successfully' });
     } catch (emailErr) {
       console.error('Landlord email send error:', emailErr);
-      console.error('Email error code:', emailErr && emailErr.code);
-      if (emailErr && emailErr.response) console.error('Email response:', emailErr.response.toString());
       res.status(201).json({
         message: 'Landlord registered successfully, but email failed to send.',
-        warning: emailErr.message,
-        code: emailErr.code,
-        response: emailErr.response ? emailErr.response.toString() : undefined
+        warning: emailErr.message || 'Unable to send credentials email.',
+        code: emailErr.code
       });
     }
   } catch (err) {
@@ -727,35 +681,25 @@ exports.createTenant = async (req, res) => {
 
         await tenant.save();
 
-        // send email with credentials
-        const transporter = await createEmailTransporter();
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Welcome to La Maison Rental System',
-            html: `
-                <p>Dear ${name},</p>
-                <p>Your tenant account has been created successfully.</p>
-                <p><strong>Tenant ID:</strong> ${tenantID}</p>
-                <p><strong>Password:</strong> ${plainPassword}</p>
-                <p>Use these credentials to log in to your dashboard.</p>
-                <p>Regards,<br>La Maison Management Team</p>
-            `
-        };
-
         try {
-            await transporter.sendMail(mailOptions);
+            await sendLoginCredentials(email, email, plainPassword, {
+                subject: 'Welcome to La Maison Rental System',
+                html: `
+                    <p>Dear ${name},</p>
+                    <p>Your tenant account has been created successfully.</p>
+                    <p><strong>Tenant ID:</strong> ${tenantID}</p>
+                    <p><strong>Password:</strong> ${plainPassword}</p>
+                    <p>Use these credentials to log in to your dashboard.</p>
+                    <p>Regards,<br>La Maison Management Team</p>
+                `
+            });
             res.status(201).json({ message: 'Tenant created and email sent successfully' });
         } catch (emailErr) {
             console.error('Tenant email send error:', emailErr);
-            console.error('Email error code:', emailErr && emailErr.code);
-            if (emailErr && emailErr.response) console.error('Email response:', emailErr.response.toString());
             res.status(201).json({
                 message: 'Tenant created successfully, but email failed to send.',
-                warning: emailErr.message,
-                code: emailErr.code,
-                response: emailErr.response ? emailErr.response.toString() : undefined
+                warning: emailErr.message || 'Unable to send credentials email.',
+                code: emailErr.code
             });
         }
 

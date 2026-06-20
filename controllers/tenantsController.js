@@ -1,7 +1,7 @@
 const Tenant = require('../models/tenants');
 const Payment = require('../models/payments');
 const Invoice = require('../models/Invoice');
-const nodemailer = require('nodemailer');
+const { sendLoginCredentials } = require('../utils/emailService');
 const crypto = require('crypto'); // For password generation
 const { v4: uuidv4 } = require('uuid'); // For tenant ID
 require('dotenv').config();
@@ -43,48 +43,27 @@ exports.createTenant = async (req, res) => {
 
         await tenant.save();
 
-        // send email with credentials (use SMTP options with timeouts and logging)
-        const transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          requireTLS: true,
-          authMethod: 'LOGIN',
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-          },
-          tls: { rejectUnauthorized: false },
-          logger: true,
-          debug: true,
-          connectionTimeout: 10000,
-          greetingTimeout: 10000,
-          socketTimeout: 10000
-        });
-
         try {
-          await transporter.verify();
-        } catch (verifyErr) {
-          console.warn('Tenant email transporter verify failed:', verifyErr && verifyErr.code);
+            await sendLoginCredentials(email, email, plainPassword, {
+                subject: 'Welcome to La Maison Rental System',
+                html: `
+                    <p>Dear ${name},</p>
+                    <p>Your tenant account has been created successfully.</p>
+                    <p><strong>Tenant ID:</strong> ${tenantID}</p>
+                    <p><strong>Password:</strong> ${plainPassword}</p>
+                    <p>Use these credentials to log in to your dashboard.</p>
+                    <p>Regards,<br>La Maison Management Team</p>
+                `
+            });
+            res.status(201).json({ message: 'Tenant created and email sent successfully' });
+        } catch (emailErr) {
+            console.error('Tenant email send error:', emailErr);
+            res.status(201).json({
+                message: 'Tenant created successfully, but email failed to send.',
+                warning: emailErr.message || 'Unable to send credentials email.',
+                code: emailErr.code
+            });
         }
-
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Welcome to La Maison Rental System',
-            html: `
-                <p>Dear ${name},</p>
-                <p>Your tenant account has been created successfully.</p>
-                <p><strong>Tenant ID:</strong> ${tenantID}</p>
-                <p><strong>Password:</strong> ${plainPassword}</p>
-                <p>Use these credentials to log in to your dashboard.</p>
-                <p>Regards,<br>La Maison Management Team</p>
-            `
-        };
-
-        await transporter.sendMail(mailOptions);
-
-        res.status(201).json({ message: 'Tenant created and email sent successfully' });
 
     } catch (err) {
         console.error('Tenant creation error:', err);
