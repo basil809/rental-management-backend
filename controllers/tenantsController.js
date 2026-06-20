@@ -43,14 +43,30 @@ exports.createTenant = async (req, res) => {
 
         await tenant.save();
 
-        //send emial with credentials
+        // send email with credentials (use SMTP options with timeouts and logging)
         const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
+          requireTLS: true,
+          authMethod: 'LOGIN',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          },
+          tls: { rejectUnauthorized: false },
+          logger: true,
+          debug: true,
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 10000
         });
+
+        try {
+          await transporter.verify();
+        } catch (verifyErr) {
+          console.warn('Tenant email transporter verify failed:', verifyErr && verifyErr.code);
+        }
 
         const mailOptions = {
             from: process.env.EMAIL_USER,

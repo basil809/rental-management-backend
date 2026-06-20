@@ -11,6 +11,44 @@ const { v4: uuidv4 } = require('uuid'); //For tenant ID
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
+// Helper to create and verify an email transporter with sensible timeouts
+async function createEmailTransporter() {
+  const auth = {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  };
+
+  const baseOptions = {
+    auth,
+    tls: { rejectUnauthorized: false },
+    logger: true,
+    debug: true,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+  };
+
+  const attempts = [
+    { host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true, authMethod: 'LOGIN', ...baseOptions },
+    { host: 'smtp.gmail.com', port: 465, secure: true, authMethod: 'LOGIN', ...baseOptions },
+    { service: 'gmail', ...baseOptions }
+  ];
+
+  for (const opts of attempts) {
+    try {
+      const transporter = nodemailer.createTransport(opts);
+      await transporter.verify();
+      console.log('Email transporter verified', { port: opts.port || 'service', secure: !!opts.secure, service: opts.service });
+      return transporter;
+    } catch (err) {
+      console.warn('Transporter verify failed for options', { port: opts.port || 'service', secure: !!opts.secure, service: opts.service, code: err && err.code });
+    }
+  }
+
+  // If all verifies fail, return a default transporter (so sendMail can still attempt)
+  return nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, requireTLS: true, authMethod: 'LOGIN', auth, tls: { rejectUnauthorized: false }, ...baseOptions });
+}
+
 // ✅ [1] Register a landlord
 exports.createLandlord = async (req, res) => {
   try {
@@ -31,20 +69,7 @@ exports.createLandlord = async (req, res) => {
 
     await landlord.save();
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      authMethod: 'LOGIN',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      tls: { rejectUnauthorized: false }
-    });
-
-    await transporter.verify();
+    const transporter = await createEmailTransporter();
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -702,21 +727,8 @@ exports.createTenant = async (req, res) => {
 
         await tenant.save();
 
-        //send email with credentials
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 587,
-            secure: false,
-            requireTLS: true,
-            authMethod: 'LOGIN',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            },
-            tls: { rejectUnauthorized: false }
-        });
-
-        await transporter.verify();
+        // send email with credentials
+        const transporter = await createEmailTransporter();
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
