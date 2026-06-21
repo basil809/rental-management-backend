@@ -5,8 +5,8 @@ const Tenant = require('../models/tenants');
 // CREATE: Add a new property
 exports.createProperty = async (req, res) => {
   try {
-    // Handle image paths from Cloudinary
-    const imagePaths = req.files.map(file => file.secure_url);
+    // 🔄 FIXED: Fallback chain to catch where your specific upload middleware is putting the URL
+    const imagePaths = req.files ? req.files.map(file => file.path || file.secure_url || file.cloudinaryUrl || '') : [];
 
     const {
       title,
@@ -43,7 +43,7 @@ exports.createProperty = async (req, res) => {
       phone,
       size,
       description,
-      images: imagePaths,
+      images: imagePaths, // Will now contain actual URL strings!
     });
 
     // If unitNames is present (e.g., for Apartments), parse and add it
