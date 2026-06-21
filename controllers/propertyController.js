@@ -8,6 +8,8 @@ exports.createProperty = async (req, res) => {
     // 🔄 FIXED: Fallback chain to catch where your specific upload middleware is putting the URL
     const imagePaths = req.files ? req.files.map(file => file.path || file.secure_url || file.cloudinaryUrl || '') : [];
 
+    console.log("Extracted Image Paths to save in DB:", imagePaths);
+    
     const {
       title,
       property_type,
