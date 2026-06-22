@@ -55,10 +55,11 @@ router.put('/:id', authMiddleware, tenantController.updateTenant);
 //✅ Update tenant via the landlord dashboard.
 router.put('/tenants/:tenantId', authMiddleware, tenantController.updateTenant);
 
+//✅ delete tenant via the landlord dashboard.
+router.delete('/tenants/:tenantId', authMiddleware, tenantController.deleteTenant);
+
 //✅ delete tenant
 router.delete('/:id', authMiddleware, tenantController.deleteTenant);
 
-//✅ delete tenant via the landlord dashboard.
-router.delete('/tenants/:tenantId', authMiddleware, tenantController.deleteTenant);
 
 module.exports = router;
