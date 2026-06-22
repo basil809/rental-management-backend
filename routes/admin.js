@@ -76,7 +76,7 @@ router.put('/admins/:id', async (req, res) => {
 });
 
 //  ✅ Dedicated route for Admin to delete any tenant
-router.delete('/tenants/:id', authMiddleware, AdminController.deleteTenantByAdmin);
+router.delete('admins/tenants/:id', authMiddleware, AdminController.deleteTenantByAdmin);
 
 // ✅ Delete admin
 router.delete('/admins/:id', async (req, res) => {

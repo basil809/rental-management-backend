@@ -56,7 +56,7 @@ router.put('/:id', authMiddleware, tenantController.updateTenant);
 router.put('/tenants/:tenantId', authMiddleware, tenantController.updateTenant);
 
 //✅ delete tenant via the landlord dashboard.
-router.delete('/tenants/:tenantId', authMiddleware, tenantController.deleteTenant);
+//router.delete('/tenants/:tenantId', authMiddleware, tenantController.deleteTenant);
 
 //✅ delete tenant
 router.delete('/:id', authMiddleware, tenantController.deleteTenant);
