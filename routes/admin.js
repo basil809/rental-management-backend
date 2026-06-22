@@ -3,6 +3,7 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const Admin = require('../models/admin');
 const AdminController = require('../controllers/adminController');
+const Tenant = require('../models/tenants');
 
 // ✅ Get all admins (excluding password)
 router.get('/admins', async (req, res) => {
@@ -73,6 +74,9 @@ router.put('/admins/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error while updating admin.' });
   }
 });
+
+//  ✅ Dedicated route for Admin to delete any tenant
+router.delete('/tenants/:id', authMiddleware, AdminController.deleteTenantByAdmin);
 
 // ✅ Delete admin
 router.delete('/admins/:id', async (req, res) => {
