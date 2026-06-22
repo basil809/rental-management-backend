@@ -113,10 +113,25 @@ exports.updateTenant = async (req, res) => {
 // DELETE: Delete a tenant by ID
 exports.deleteTenant = async (req, res) => {
   try {
-    await Tenant.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Tenant deleted' });
+    // 1. Extract whichever parameter is present (supports both routes)
+    const targetId = req.params.id || req.params.tenantId;
+
+    if (!targetId) {
+      return res.status(400).json({ success: false, message: 'No tenant ID provided' });
+    }
+
+    const deletedTenant = await Tenant.findByIdAndDelete(targetId);
+    
+    if (!deletedTenant) {
+      return res.status(404).json({ success: false, message: 'Tenant not found' });
+    }
+
+    // Return a structured JSON response matching your frontend expectation
+    return res.json({ success: true, message: 'Tenant deleted successfully' });
+    
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Delete Controller Error:", err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 

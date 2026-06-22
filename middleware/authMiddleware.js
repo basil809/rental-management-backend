@@ -1,3 +1,4 @@
+//AuthMiddleware.js
 const mongoose = require('mongoose'); 
 const jwt = require('jsonwebtoken');
 const Tenant = require('../models/tenants');
@@ -25,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     console.log("Decoded token:", decoded);
 
     let user = await Tenant.findById(decoded.id);
