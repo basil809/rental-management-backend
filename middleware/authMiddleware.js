@@ -11,15 +11,22 @@ if(!JWT_SECRET) {
 }
 
 const authMiddleware = async (req, res, next) => {
+  console .log("Cookies received:", req.cookies);
+
   const token = req.cookies.token;
   
 
   if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: No token provided' });
+    console.log("NO TOKEN FOUND");
+    return res.status(401).json({ 
+      message: 'Unauthorized: No token provided' 
+    });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    
+    console.log("Decoded token:", decoded);
 
     let user = await Tenant.findById(decoded.id);
     if (user) {
