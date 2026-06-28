@@ -415,23 +415,25 @@ exports.getRentableUnits = async (req, res) => {
     const landlord = await Landlord.findById(req.user._id);
 
     if (!landlord || !landlord.propertyId) {
-        return res.status(404).json({
-            success: false,
-            message: "No property assigned."
-        });
+      return res.status(404).json({
+        success: false,
+        message: "No property assigned."
+      });
     }
 
     const property = await Property.findById(landlord.propertyId);
 
     if (!property) {
-        return res.status(404).json({
-            success: false,
-            message: "Property not found."
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Property not found."
+      });
     }
 
-    // Count tenants assigned to this specific property ID
-    const tenantCount = await Tenant.countDocuments({ property: property._id });
+    // Count tenants assigned to this specific property ObjectId
+    const tenantCount = await Tenant.countDocuments({
+      propertyId: property._id
+    });
 
     const availableUnits = Math.max(0, (property.units || 0) - tenantCount);
 
@@ -439,11 +441,15 @@ exports.getRentableUnits = async (req, res) => {
       success: true,
       propertyName: property.title,
       availableUnits,
-      totalUnits: property.units
+      totalUnits: property.units,
+      occupiedUnits: tenantCount
     });
 
   } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
