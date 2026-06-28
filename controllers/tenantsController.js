@@ -16,7 +16,7 @@ exports.createTenant = async (req, res) => {
         } = req.body;
 
         // ✅ Check if roomNumber is already occupied using the reliable ObjectId reference
-        const existingTenant = await Tenant.findOne({ property: propertyId, roomNumber });
+       const existingTenant = await Tenant.findOne({ propertyId, roomNumber });
         if (existingTenant) {
             return res.status(400).json({
                 message: `Room ${roomNumber} is already occupied in the selected property.`

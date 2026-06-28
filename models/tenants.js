@@ -10,7 +10,8 @@ const tenantSchema = new mongoose.Schema({
   rent: { type: Number, required: true }, // ✅ keep rent, not monthlyRent
   lease_start: { type: Date, required: true },
   property: { type: String, required: true },
-  propertyId: { type: mongoose.Schema.Types.ObjectId, 
+  propertyId: { 
+    type: mongoose.Schema.Types.ObjectId, 
     ref: 'Property', 
     required: true 
   },
