@@ -9,13 +9,14 @@ const bcrypt = require('bcrypt');
 
 exports.createTenant = async (req, res) => {
     try {
+        // ✅ Destructure propertyId and propertyName from the incoming body
         const {
             name, email, phone, idNumber, gender, roomNumber,
-            rent, lease_start, property
+            rent, lease_start, propertyId, propertyName
         } = req.body;
 
-        // ✅ Check if roomNumber is already occupied in that property
-        const existingTenant = await Tenant.findOne({ property, roomNumber });
+        // ✅ Check if roomNumber is already occupied using the reliable ObjectId reference
+        const existingTenant = await Tenant.findOne({ property: propertyId, roomNumber });
         if (existingTenant) {
             return res.status(400).json({
                 message: `Room ${roomNumber} is already occupied in the selected property.`
@@ -25,8 +26,9 @@ exports.createTenant = async (req, res) => {
         // Generate Tenant ID and Password
         const tenantID = uuidv4().split('-')[0]; // e.g., 'a1b2c3d4'
         const plainPassword = crypto.randomBytes(4).toString('hex'); // e.g., '8f4a9d3c'
-        const hashedPassword = await bcrypt.hash(plainPassword, 10); // ✅ moved here
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+        // ✅ Instantiate the tenant object storing both attributes
         const tenant = new Tenant({
             name,
             email,
@@ -36,7 +38,8 @@ exports.createTenant = async (req, res) => {
             roomNumber,
             rent,
             lease_start,
-            property,
+            propertyId: propertyId,     // Stores the Mongoose Schema ObjectId reference 
+            property: propertyName, // Stores the fallback String Text Name
             tenantID,
             password: hashedPassword
         });
@@ -55,10 +58,10 @@ exports.createTenant = async (req, res) => {
                     <p>Regards,<br>La Maison Management Team</p>
                 `
             });
-            res.status(201).json({ message: 'Tenant created and email sent successfully' });
+            return res.status(201).json({ message: 'Tenant created and email sent successfully' });
         } catch (emailErr) {
             console.error('Tenant email send error:', emailErr);
-            res.status(201).json({
+            return res.status(201).json({
                 message: 'Tenant created successfully, but email failed to send.',
                 warning: emailErr.message || 'Unable to send credentials email.',
                 code: emailErr.code
@@ -67,7 +70,7 @@ exports.createTenant = async (req, res) => {
 
     } catch (err) {
         console.error('Tenant creation error:', err);
-        res.status(500).json({ message: 'Something went wrong' });
+        return res.status(500).json({ message: 'Something went wrong' });
     }
 };
 
