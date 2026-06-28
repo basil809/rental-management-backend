@@ -1,3 +1,4 @@
+//landlords.js Model
 const mongoose = require('mongoose');
 
 const landlordSchema = new mongoose.Schema({
@@ -26,6 +27,11 @@ const landlordSchema = new mongoose.Schema({
   },
   property: {           // Changed from propertyId to just property
     type: String,
+    required: true,
+  },
+  propertyId: {           // New field to store the ObjectId reference to the Property
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Property',
     required: true,
   },
   password: {

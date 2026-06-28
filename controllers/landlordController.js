@@ -14,7 +14,7 @@ require('dotenv').config();
 // ✅ [1] Register a landlord
 exports.createLandlord = async (req, res) => {
   try {
-    const { name, email, phone, idNumber, address, property } = req.body;
+    const { name, email, phone, idNumber, address, property, properyId } = req.body;
 
     const plainPassword = crypto.randomBytes(4).toString('hex');
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
@@ -26,6 +26,7 @@ exports.createLandlord = async (req, res) => {
       idNumber,
       address,
       property,
+      propertyId: propertyId, // Store the ObjectId reference to the Property
       password: hashedPassword
     });
 
@@ -411,36 +412,29 @@ exports.countMaintenanceRequestsByLandlord = async (req, res) => {
 // ✅ [17] Get rentable units for the logged-in landlord
 exports.getRentableUnits = async (req, res) => {
   try {
-    const landlordId = req.user._id;
+    const landlordId = req.user._id; // Logged-in landlord ID from middleware
 
-    // Get landlord by ID
-    const landlord = await Landlord.findById(landlordId);
-    if (!landlord) {
-      return res.status(404).json({ success: false, message: 'Landlord not found.' });
-    }
-
-    // Find property posted by this landlord
-    const property = await Property.findOne({ landlord: landlord.name }); // match string name
+    // Directly find the property belonging to this landlord using its ID reference!
+    const property = await Property.findOne({ landlord: landlordId }); 
+    
     if (!property) {
-      return res.status(404).json({ success: false, message: 'Property not found for landlord.' });
+      return res.status(404).json({ success: false, message: 'No property assigned to this landlord account.' });
     }
 
-    // Count all tenants in this property
-    const tenants = await Tenant.find({ property: property.title }); // assuming `property` field on Tenant is a string like 'Keywest Gardens'
-    const tenantCount = tenants.length;
+    // Count tenants assigned to this specific property ID
+    const tenantCount = await Tenant.countDocuments({ property: property._id });
 
-    // Calculate available units
-    const availableUnits = property.units - tenantCount;
+    const availableUnits = Math.max(0, (property.units || 0) - tenantCount);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Available units in ${property.title}`,
-      availableUnits
+      propertyName: property.title,
+      availableUnits,
+      totalUnits: property.units
     });
 
   } catch (error) {
-    console.error('Error fetching available units:', error);
-    res.status(500).json({ success: false, message: 'Server error while getting available units.' });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

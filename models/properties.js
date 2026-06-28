@@ -1,3 +1,4 @@
+//properties.js Model
 const mongoose = require('mongoose');
 
 const propertySchema = new mongoose.Schema({
@@ -10,6 +11,11 @@ const propertySchema = new mongoose.Schema({
   bedrooms: Number,
   bathrooms: Number,
   landlord: String,
+  landlordId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Landlord',
+    default: null,
+  },
   email: String,
   phone: String,
   description: String,

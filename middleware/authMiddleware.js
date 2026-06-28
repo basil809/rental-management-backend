@@ -51,7 +51,7 @@ const authMiddleware = async (req, res, next) => {
         userType: 'Landlord',
         landlordName: user.name,
         name: user.name,
-         property: user.property,
+        property: user.property,
       };
       return next();
     }
