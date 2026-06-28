@@ -83,6 +83,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
 // ✅ Landlord logout
 router.post('/logout', authMiddleware, landlordController.logoutLandlord);
+
 // GET landlord properties and unoccupied units
 // GET landlord property & vacant units
 router.get('/properties', authMiddleware, async (req, res) => {
