@@ -412,13 +412,22 @@ exports.countMaintenanceRequestsByLandlord = async (req, res) => {
 // ✅ [17] Get rentable units for the logged-in landlord
 exports.getRentableUnits = async (req, res) => {
   try {
-    const landlordId = req.user._id; // Logged-in landlord ID from middleware
+    const landlord = await Landlord.findById(req.user._id);
 
-    // Directly find the property belonging to this landlord using its ID reference!
-    const property = await Property.findOne({ landlord: landlordId }); 
-    
+    if (!landlord || !landlord.propertyId) {
+        return res.status(404).json({
+            success: false,
+            message: "No property assigned."
+        });
+    }
+
+    const property = await Property.findById(landlord.propertyId);
+
     if (!property) {
-      return res.status(404).json({ success: false, message: 'No property assigned to this landlord account.' });
+        return res.status(404).json({
+            success: false,
+            message: "Property not found."
+        });
     }
 
     // Count tenants assigned to this specific property ID
