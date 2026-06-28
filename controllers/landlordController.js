@@ -14,7 +14,7 @@ require('dotenv').config();
 // ✅ [1] Register a landlord
 exports.createLandlord = async (req, res) => {
   try {
-    const { name, email, phone, idNumber, address, property, properyId } = req.body;
+    const { name, email, phone, idNumber, address, property, propertyId } = req.body;
 
     const plainPassword = crypto.randomBytes(4).toString('hex');
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
