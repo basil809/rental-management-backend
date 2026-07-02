@@ -21,7 +21,7 @@ router.get('/count', async (req, res) => {
 });
 
 // ✅ Login
-router.post('/login', tenantController.loginTenant);
+router.post('/login', authMiddleware,tenantController.loginTenant);
 
 // ✅ Logout
 router.post('/logout', authMiddleware, tenantController.logoutTenant);
