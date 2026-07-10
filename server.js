@@ -103,6 +103,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api', require('./routes/admin'));
 app.use('/api/system', require('./routes/SystemLog'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/listings', require('./routes/listings'));
 app.use('/api/rentals', require('./routes/rentals'));
 app.use('/api/tenants', require('./routes/tenants'));
 app.use('/api/landlords', require('./routes/landlords'));
