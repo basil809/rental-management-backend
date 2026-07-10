@@ -21,7 +21,7 @@ router.post('/approve-listing/:id', authMiddleware, listingController.approveLis
 router.put('/listing/:id', authMiddleware, upload.array('images', 10), listingController.updateListing);
 
 // Admins can delete a property listing
-router.delete('/listing/:id', authMiddleware, listingController.deleteListing);
+router.delete('/:id', authMiddleware, listingController.deleteListing);
 
 
 module.exports = router;
