@@ -22,7 +22,7 @@ exports.submitAdvertise = async (req, res) => {
             email, 
             phone, 
             description 
-        } = req.body;
+        } = req.body || {};
         
         const listing = new Listing({
             title,
@@ -42,7 +42,10 @@ exports.submitAdvertise = async (req, res) => {
         });
 
         await listing.save();
-        res.status(201).json({ message: 'Property listing submitted successfully!' });
+        res.status(201).json({
+            success: true,
+            message: 'Property listing submitted successfully!'
+        });
     } catch (error) {
         res.status(500).json({ message: 'Error submitting the property listing!', error: error.message });
     }
