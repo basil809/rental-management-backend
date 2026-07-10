@@ -26,7 +26,7 @@ exports.create = async (req, res) => {
 //User submits a property listing
 exports.submitAdvertise = async (req, res) => {
     try {
-        const { title, property_type, price, location, size, units, bedrooms, bathrooms, landlord, Name, email, phone, description } = req.body;
+        const { title, property_type, price, location, size, units, bedrooms, bathrooms, package, Name, email, phone, description } = req.body;
         const images = req.files ? req.files.map(file => file.path) : [];
 
         const listing = new Listing({
@@ -38,7 +38,7 @@ exports.submitAdvertise = async (req, res) => {
             units,
             bedrooms,
             bathrooms,
-            landlord,
+            package,
             Name,
             email,
             phone,

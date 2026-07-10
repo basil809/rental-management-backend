@@ -10,22 +10,15 @@ const listingSchema = new mongoose.Schema({
     units: Number,
     bedrooms: Number,
     bathrooms: Number,
-    landlord: String,
-    landlordId: {
-       type: mongoose.Schema.Types.ObjectId,
-       ref: 'Landlord',
-       default: null,
-    },
     Name: String,
     email: String,
     phone: String,
     description: String,
     images: [String],
-   
-     // New field to store generated unit names (for Apartments)
-    unitNames: {
-      type: [String],
-      default: [],
+    package: {
+        type: String,
+        enum: ['Standard Package', 'Medium Package', 'Premium Package'],
+        default: 'Standard Package'
     },
    }, { timestamps: true });
 
