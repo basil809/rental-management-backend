@@ -26,9 +26,26 @@ exports.create = async (req, res) => {
 //User submits a property listing
 exports.submitAdvertise = async (req, res) => {
     try {
-        const { title, property_type, price, location, size, units, bedrooms, bathrooms, package, Name, email, phone, description } = req.body;
-        const images = req.files ? req.files.map(file => file.path) : [];
+        const imagePaths = req.files ? req.files.map(file => file.path || file.secure_url || file.cloudinaryUrl || '') : [];
 
+        console.log("Extracted Image Paths to save in DB:", imagePaths);
+    
+        const {
+            title, 
+            property_type, 
+            price, 
+            location, 
+            size, 
+            units, 
+            bedrooms, 
+            bathrooms, 
+            package, 
+            Name, 
+            email, 
+            phone, 
+            description 
+        } = req.body;
+        
         const listing = new Listing({
             title,
             property_type,
@@ -43,7 +60,7 @@ exports.submitAdvertise = async (req, res) => {
             email,
             phone,
             description,
-            images
+            images: imagePaths, // Will now contain actual URL strings!
         });
 
         await listing.save();
