@@ -18,7 +18,7 @@ router.get('/listing/:id', authMiddleware, listingController.findListingById);
 router.post('/approve-listing/:id', authMiddleware, listingController.approveListing);
 
 // Admins can update a property listing
-router.put('/listing/:id', authMiddleware, upload.array('images', 10), listingController.updateListing);
+router.put('/update-listing/:id', authMiddleware, upload.array('images', 10), listingController.updateListing);
 
 // Admins can delete a property listing
 router.delete('/delete-listing/:id', authMiddleware, listingController.deleteListing);
