@@ -172,11 +172,10 @@ exports.updateListing = async (req, res) => {
 // Admins can delete a property listing
 exports.deleteListing = async (req, res) => {
     try {
-        const listing = await Listing.findById(req.params.id);
+        const listing = await Listing.findByIdAndDelete(req.params.id);
         if (!listing) {
             return res.status(404).json({ message: 'Listing not found' });
         }
-        await listing.remove();
         res.status(200).json({ message: 'Listing deleted successfully!' });
     } catch (err) {
         console.error('Error:', err);
