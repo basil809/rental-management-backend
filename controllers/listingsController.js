@@ -124,7 +124,7 @@ exports.approveListing = async (req, res) => {
             bedrooms,
             bathrooms,
             package,
-            Name,
+            landlord: Name,
             email,
             phone,
             description,
