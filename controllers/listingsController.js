@@ -130,8 +130,11 @@ exports.approveListing = async (req, res) => {
             description,
             images,
         });
+        // Save the new property to the properties collection
         await property.save();
-        await listing.remove();
+
+        // Delete the listing after approval
+        await Listing.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: 'Listing approved and converted to property successfully!' });
     } catch (err) {
         console.error('Error:', err);
