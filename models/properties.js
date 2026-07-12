@@ -11,6 +11,11 @@ const propertySchema = new mongoose.Schema({
   bedrooms: Number,
   bathrooms: Number,
   landlord: String,
+  package: {
+    type: String,
+    enum: ['Standard Package', 'Medium Package', 'Premium Package'],
+    default: 'Standard Package'
+  },
   landlordId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Landlord',

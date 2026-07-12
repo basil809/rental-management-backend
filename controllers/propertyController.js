@@ -44,6 +44,8 @@ exports.createProperty = async (req, res) => {
       email,
       phone,
       size,
+      //set the package as premium by default for now, can be changed later by the admin
+      package: 'Premium Package',
       description,
       images: imagePaths, // Will now contain actual URL strings!
     });
