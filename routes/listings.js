@@ -14,8 +14,8 @@ router.get('/All-listings', authMiddleware, listingController.findAllListings);
 // Admins can find a specific property listing by ID
 router.get('/listing/:id', authMiddleware, listingController.findListingById);
 
-//Admins can approve a property listing by converting it to a property in the properties collection
-router.post('/approve-listing/:id', authMiddleware, listingController.approveListing);
+// Admins can approve a property listing by converting it to a property in the properties collection
+router.post('/approveListing/:id', authMiddleware, listingController.approveListing);
 
 // Admins can update a property listing
 router.put('/update-listing/:id', authMiddleware, upload.array('images', 10), listingController.updateListing);
